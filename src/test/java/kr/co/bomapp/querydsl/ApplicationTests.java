@@ -5,12 +5,11 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import kr.co.bomapp.querydsl.domain.user.Department;
-import kr.co.bomapp.querydsl.domain.user.QUser;
-import kr.co.bomapp.querydsl.domain.user.User;
+import kr.co.bomapp.querydsl.domain.user.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -316,5 +315,69 @@ class ApplicationTests {
         for (String age : result) {
             System.out.println(age);
         }
+    }
+
+    // Projection
+    @Test
+    public void testOneProjection() {
+        List<String> result = queryFactory
+                .select(user.name)
+                .from(user)
+                .fetch();
+
+        for (String name : result) {
+            System.out.println(name);
+        }
+    }
+
+    @Test
+    public void testMultiProjection() {
+        List<Tuple> result = queryFactory
+                .select(user.name, user.age)
+                .from(user)
+                .fetch();
+
+        for (Tuple data : result) {
+            String name = data.get(user.name);
+            Integer age = data.get(user.age);
+
+            System.out.println("name= " + name);
+            System.out.println("age= " + age);
+        }
+    }
+
+    @Test
+    public void testQueryProjection() {
+        List<UserDTO> result = queryFactory
+                .select(new QUserDTO(user.name, user.age))
+                .from(user)
+                .fetch();
+
+        for (UserDTO user : result) {
+            System.out.println("name= " + user.getName());
+            System.out.println("age= " + user.getAge());
+        }
+    }
+
+    // 동적 쿼리
+    @Test
+    public void testWhereParam() {
+        List<User> result = queryFactory
+                .selectFrom(user)
+                .where(nameEq(null), ageEq(10))
+                .fetch();
+
+        for (User user : result) {
+            System.out.println("name= " + user.getName());
+            System.out.println("age= " + user.getAge());
+        }
+    }
+
+    private BooleanExpression nameEq(String nameParam) {
+        return nameParam != null ? user.name.eq(nameParam) : null;
+    }
+
+    private BooleanExpression ageEq(Integer ageParam) {
+        return ageParam != null ? user.age.eq(ageParam) : null;
     }
 }
