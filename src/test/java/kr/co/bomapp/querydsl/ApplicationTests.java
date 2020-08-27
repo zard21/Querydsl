@@ -54,6 +54,7 @@ class ApplicationTests {
 
     @Test
     public void testQuerydsl() {
+//        QUser user = new QUser("user");
         QUser user = QUser.user;
 
         User queryUser = queryFactory
